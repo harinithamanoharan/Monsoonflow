@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historical Context — MonsoonFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .history-list {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .history-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            animation: slideIn 0.5s ease-out backwards;
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .history-date {
+            text-align: center;
+            padding-right: 2rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-date span { font-weight: 800; font-size: 1.4rem; display: block; }
+        .history-date small { opacity: 0.5; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
+
+        .history-info h3 { font-family: 'Outfit', sans-serif; font-size: 1.2rem; margin-bottom: 5px; }
+        .history-info p { opacity: 0.6; line-height: 1.5; font-size: 0.9rem; }
+
+        .history-badge {
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-storm { background: rgba(103, 65, 217, 0.2); color: #9775fa; border: 1px solid rgba(103, 65, 217, 0.3); }
+        .badge-clear { background: rgba(77, 171, 247, 0.2); color: #4dabf7; border: 1px solid rgba(77, 171, 247, 0.3); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="rainCanvas" style="position: fixed; inset: 0; z-index: -2;"></canvas>
+    <div class="app-container">
+        <header class="back-nav" style="margin-bottom: 2rem;">
+            <a href="index.html" class="back-btn" style="width: fit-content; text-decoration: none;">
+                <i data-lucide="arrow-left"></i> Back to Dashboard
+            </a>
+        </header>
+
+        <div class="profile-title" style="margin-bottom: 3rem;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem;">Historical Database</h1>
+            <p style="color: var(--primary); opacity: 0.8; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Task Logs & Weather Insights</p>
+        </div>
+
+        <div class="history-list" id="historyList">
+            <div class="history-item" style="animation-delay: 0.1s;">
+                <div class="history-date">
+                    <span>04</span><small>Apr</small>
+                </div>
+                <div class="history-info">
+                    <h3>Heavy Monsoon Delay</h3>
+                    <p>MTH Road flooding detected. 4 outdoor tasks were carried forward to Sunday. Automated rescheduling saved 45 minutes of manual planning.</p>
+                </div>
+                <div class="history-badge badge-storm">Storm Alert</div>
+            </div>
+
+            <div class="history-item" style="animation-delay: 0.2s;">
+                <div class="history-date">
+                    <span>02</span><small>Apr</small>
+                </div>
+                <div class="history-info">
+                    <h3>Peak Productivity Window</h3>
+                    <p>Clear skies across Tamil Nadu. All high-priority tasks completed ahead of schedule. Ideal conditions for site visits.</p>
+                </div>
+                <div class="history-badge badge-clear">Clear Skies</div>
+            </div>
+
+            <div class="history-item" style="animation-delay: 0.3s;">
+                <div class="history-date">
+                    <span>30</span><small>Mar</small>
+                </div>
+                <div class="history-info">
+                    <h3>Localized Rain Shielding</h3>
+                    <p>Morning drizzle caused temporary holds. AI Agent rerouted indoor training sessions to maximize productivity.</p>
+                </div>
+                <div class="history-badge badge-storm">Mild Rain</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const userData = JSON.parse(localStorage.getItem('monsoonflow_user'));
+        if (!userData || !userData.loggedIn) window.location.href = 'login.html';
+
+        // Background Rain
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        const rainDrops = [];
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+
+        class Drop {
+            constructor() { this.init(); }
+            init() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * -h;
+                this.l = Math.random() * 20 + 10;
+                this.v = Math.random() * 5 + 5;
+                this.a = Math.random() * 0.1 + 0.1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(174, 194, 224, ${this.a})`;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.l);
+                ctx.stroke();
+            }
+            update() {
+                this.y += this.v;
+                if (this.y > h) this.init();
+            }
+        }
+        for (let i = 0; i < 100; i++) rainDrops.push(new Drop());
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+            rainDrops.forEach(d => { d.update(); d.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

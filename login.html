@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — MonsoonFlow Coordinator</title>
+    <meta name="description" content="Log in to MonsoonFlow — your AI-powered monsoon schedule coordinator.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #4dabf7;
+            --purple: #6741d9;
+            --bg-deep: #070d1f;
+            --bg-mid: #0d1530;
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.09);
+            --text: #e8edf5;
+            --muted: rgba(255,255,255,0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Rain Canvas ── */
+        #rainCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ── Layout ── */
+        .page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── LEFT PANEL ── */
+        .left-panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3rem;
+            background: linear-gradient(135deg, rgba(13,21,53,0.9) 0%, rgba(10,17,40,0.95) 100%);
+            border-right: 1px solid var(--glass-border);
+            overflow: hidden;
+        }
+
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(77,171,247,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            right: -20%;
+            width: 70%;
+            height: 70%;
+            background: radial-gradient(ellipse, rgba(103,65,217,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-container {
+            padding: 2px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4dabf7, #6741d9);
+            box-shadow: 0 0 24px rgba(77, 171, 247, 0.35);
+            animation: glow-pulse 4s infinite ease-in-out;
+        }
+
+        .logo-circle {
+            width: 48px;
+            height: 48px;
+            background: #0a1128;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon {
+            width: 26px !important;
+            height: 26px !important;
+            color: #4dabf7;
+            filter: drop-shadow(0 0 5px rgba(77,171,247,0.6));
+        }
+
+        .brand-text h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #fff;
+            line-height: 1;
+        }
+        .brand-text h1 span {
+            background: linear-gradient(to right, #4dabf7, #6741d9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text p {
+            font-size: 0.65rem;
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-top: 3px;
+            font-weight: 600;
+        }
+
+        /* Hero illustration area */
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .hero-tagline {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.2rem;
+            color: #fff;
+        }
+        .hero-tagline .gradient-word {
+            background: linear-gradient(90deg, #4dabf7, #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1rem;
+            color: var(--muted);
+            line-height: 1.7;
+            max-width: 380px;
+            margin-bottom: 2.5rem;
+        }
+
+        .feature-pills {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: background 0.2s;
+        }
+
+        .pill:hover { background: rgba(255,255,255,0.07); }
+
+        .pill-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .pill-icon.blue { background: rgba(77,171,247,0.15); color: #4dabf7; }
+        .pill-icon.purple { background: rgba(103,65,217,0.15); color: #a78bfa; }
+        .pill-icon.green { background: rgba(52,211,153,0.15); color: #34d399; }
+
+        .pill-text strong {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+        }
+        .pill-text span {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        /* Left bottom */
+        .left-footer {
+            position: relative;
+            z-index: 2;
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* ── RIGHT PANEL ── */
+        .right-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background: rgba(7, 13, 31, 0.7);
+            backdrop-filter: blur(20px);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .auth-header h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        /* ── Form ── */
+        .form-group {
+            margin-bottom: 1.4rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 17px !important;
+            height: 17px !important;
+            color: var(--muted);
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            padding: 0.85rem 1rem 0.85rem 2.75rem;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        .input-wrapper input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .input-wrapper input:focus {
+            background: rgba(77,171,247,0.07);
+            border-color: rgba(77,171,247,0.5);
+            box-shadow: 0 0 0 4px rgba(77,171,247,0.1);
+        }
+
+        .input-wrapper input:focus + .input-icon-right,
+        .input-wrapper input:focus ~ .input-icon {
+            color: #4dabf7;
+        }
+
+        .input-wrapper .toggle-pw {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrapper .toggle-pw:hover { color: #fff; }
+
+        /* Forgot password row */
+        .form-row-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.4rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: var(--muted);
+            user-select: none;
+        }
+
+        .remember-me input[type="checkbox"] {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            padding: 0;
+        }
+
+        .remember-me input[type="checkbox"]:checked {
+            background: #4dabf7;
+            border-color: #4dabf7;
+        }
+
+        .remember-me input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .forgot-link {
+            font-size: 0.82rem;
+            color: #4dabf7;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .forgot-link:hover { opacity: 0.75; text-decoration: underline; }
+
+        /* Submit button */
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: linear-gradient(135deg, #4dabf7 0%, #6741d9 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(77,171,247,0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(77,171,247,0.45);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        .btn-login .btn-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-login.loading .btn-inner { opacity: 0; }
+
+        .btn-login .spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 22px;
+            height: 22px;
+            border: 2.5px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .btn-login.loading .spinner { display: block; }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 1.5rem 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .divider span {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.3);
+            white-space: nowrap;
+        }
+
+        /* Social buttons */
+        .social-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-social:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.18);
+        }
+
+        /* Footer link */
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .auth-footer a {
+            color: #4dabf7;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 4px;
+            transition: opacity 0.2s;
+        }
+        .auth-footer a:hover { opacity: 0.75; text-decoration: underline; }
+
+        /* Error message */
+        .error-msg {
+            display: none;
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid rgba(255,77,77,0.3);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Floating rain drops (decorative) */
+        .rain-drop {
+            position: fixed;
+            width: 1px;
+            border-radius: 1px;
+            opacity: 0;
+            animation: rainFall linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Animations ── */
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 24px rgba(77,171,247,0.35); }
+            50% { box-shadow: 0 0 40px rgba(103,65,217,0.55); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes rainFall {
+            0%   { opacity: 0; transform: translateY(-10vh); }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.5; }
+            100% { opacity: 0; transform: translateY(110vh); }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .page { grid-template-columns: 1fr; }
+            .left-panel { display: none; }
+            .right-panel { padding: 3rem 1.5rem; overflow-y: auto; }
+            body { overflow: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="rainCanvas"></canvas>
+
+    <div class="page">
+
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <div class="brand">
+                <div class="logo-container">
+                    <div class="logo-circle">
+                        <i data-lucide="droplets" class="logo-icon"></i>
+                    </div>
+                </div>
+                <div class="brand-text">
+                    <h1>MONSOON<span>FLOW</span></h1>
+                    <p>Coordinator Intelligence</p>
+                </div>
+            </div>
+
+            <div class="hero-content">
+                <p class="hero-tagline">
+                    Schedule smarter<br>
+                    through every <span class="gradient-word">monsoon.</span>
+                </p>
+                <p class="hero-desc">
+                    Your AI-powered daily coordinator that adapts to India's monsoon in real-time —
+                    rescheduling outdoor tasks, suggesting indoor alternatives, and keeping you productive.
+                </p>
+
+                <div class="feature-pills">
+                    <div class="pill">
+                        <div class="pill-icon blue">
+                            <i data-lucide="brain-circuit" style="width:18px;height:18px;"></i>
+                        </div>
+                        <div class="pill-text">
+                            <strong>AI Schedule Agent</strong>
+                            <span>Real-time rescheduling powered by Gemini</span>
+                        </div>
+                    </div>
+                    <div class="pill">
+                        <div class="pill-icon purple">
+                            <i data-lucide="cloud-rain" style="width:18px;height:18px;"></i>
+                        </div>
+                        <div class="pill-text">
+                            <strong>Live Weather Awareness</strong>
+                            <span>Adapts to monsoon patterns automatically</span>
+                        </div>
+                    </div>
+                    <div class="pill">
+                        <div class="pill-icon green">
+                            <i data-lucide="bar-chart-3" style="width:18px;height:18px;"></i>
+                        </div>
+                        <div class="pill-text">
+                            <strong>Productivity Insights</strong>
+                            <span>Track task completion history & patterns</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="left-footer">
+                © 2026 MonsoonFlow · Built for the Indian Monsoon
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h2>Welcome back 👋</h2>
+                    <p>Sign in to your MonsoonFlow account</p>
+                </div>
+
+                <div class="error-msg" id="errorMsg">
+                    <i data-lucide="alert-circle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>
+                    Invalid credentials. Please try again.
+                </div>
+
+                <form id="loginForm" novalidate>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="mail" class="input-icon"></i>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="you@example.com"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="lock" class="input-icon"></i>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="••••••••"
+                                autocomplete="current-password"
+                                required
+                            >
+                            <button type="button" class="toggle-pw" id="togglePw" title="Toggle password visibility">
+                                <i data-lucide="eye" id="pwEyeIcon" style="width:16px;height:16px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row-meta">
+                        <label class="remember-me">
+                            <input type="checkbox" id="rememberMe" name="remember">
+                            Remember me
+                        </label>
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <span class="btn-inner">
+                            <i data-lucide="log-in" style="width:18px;height:18px;"></i>
+                            Sign In
+                        </span>
+                        <span class="spinner"></span>
+                    </button>
+                </form>
+
+                <div class="divider"><span>or continue with</span></div>
+
+                <div class="social-btns">
+                    <button class="btn-social" onclick="demoLogin()">
+                        <i data-lucide="user-round" style="width:16px;height:16px;color:#4dabf7;"></i>
+                        Demo Login
+                    </button>
+                    <button class="btn-social" onclick="googleLogin()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        Google
+                    </button>
+                </div>
+
+                <div class="auth-footer">
+                    Don't have an account?
+                    <a href="signup.html">Create one →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── Icons ──
+        lucide.createIcons();
+
+        // ── Rain Canvas ──
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+        let drops = [];
+
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function spawnDrop() {
+            return {
+                x: Math.random() * W,
+                y: Math.random() * -100,
+                len: Math.random() * 18 + 8,
+                speed: Math.random() * 3.5 + 2.5,
+                alpha: Math.random() * 0.12 + 0.03,
+                width: Math.random() < 0.3 ? 1.5 : 1,
+            };
+        }
+
+        for (let i = 0; i < 90; i++) {
+            drops.push({ ...spawnDrop(), y: Math.random() * H });
+        }
+
+        function animateRain() {
+            ctx.clearRect(0, 0, W, H);
+            drops.forEach(d => {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(174, 210, 240, ${d.alpha})`;
+                ctx.lineWidth = d.width;
+                ctx.moveTo(d.x, d.y);
+                ctx.lineTo(d.x - 1, d.y + d.len);
+                ctx.stroke();
+                d.y += d.speed;
+                if (d.y > H + d.len) {
+                    Object.assign(d, spawnDrop());
+                }
+            });
+            requestAnimationFrame(animateRain);
+        }
+        animateRain();
+
+        // ── Background gradient orbs ──
+        const canvas2 = document.createElement('canvas');
+        canvas2.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4';
+        document.body.insertBefore(canvas2, document.body.firstChild);
+        const ctx2 = canvas2.getContext('2d');
+        let t2 = 0;
+        function drawOrbs() {
+            canvas2.width = window.innerWidth;
+            canvas2.height = window.innerHeight;
+            ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+            const cx = canvas2.width / 2;
+            const cy = canvas2.height / 2;
+            const r1 = Math.sin(t2 * 0.6) * 50;
+            const orb1 = ctx2.createRadialGradient(cx + r1, cy - 100, 0, cx + r1, cy - 100, 300);
+            orb1.addColorStop(0, 'rgba(77, 171, 247, 0.15)');
+            orb1.addColorStop(1, 'transparent');
+            ctx2.fillStyle = orb1;
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+            const r2 = Math.cos(t2 * 0.4) * 60;
+            const orb2 = ctx2.createRadialGradient(cx + r2 - 150, cy + 150, 0, cx + r2 - 150, cy + 150, 250);
+            orb2.addColorStop(0, 'rgba(103, 65, 217, 0.12)');
+            orb2.addColorStop(1, 'transparent');
+            ctx2.fillStyle = orb2;
+            ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+            t2 += 0.008;
+            requestAnimationFrame(drawOrbs);
+        }
+        drawOrbs();
+
+        // ── Password toggle ──
+        const togglePw = document.getElementById('togglePw');
+        const pwInput = document.getElementById('password');
+        const pwEyeIcon = document.getElementById('pwEyeIcon');
+        let pwVisible = false;
+        togglePw.addEventListener('click', () => {
+            pwVisible = !pwVisible;
+            pwInput.type = pwVisible ? 'text' : 'password';
+            pwEyeIcon.setAttribute('data-lucide', pwVisible ? 'eye-off' : 'eye');
+            lucide.createIcons();
+        });
+
+        // ── Form submission ──
+        const form = document.getElementById('loginForm');
+        const btn = document.getElementById('loginBtn');
+        const errorMsg = document.getElementById('errorMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) return;
+
+            // Loading state
+            btn.classList.add('loading');
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Success! Store user and redirect
+                    localStorage.setItem('monsoonflow_user', JSON.stringify({ ...data.user, loggedIn: true }));
+                    window.location.href = 'index.html';
+                } else {
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerHTML = `<i data-lucide="alert-circle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:6px;"></i> ${data.error || 'Invalid credentials'}`;
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                console.error("Login error:", err);
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = 'Connection error. Is the server running?';
+            }
+        });
+
+        // Demo login
+        function demoLogin() {
+            document.getElementById('email').value = 'demo@monsoonflow.ai';
+            document.getElementById('password').value = 'demo1234';
+            setTimeout(() => form.requestSubmit(), 300);
+        }
+
+        function googleLogin() {
+            alert('Google OAuth would be integrated here in production.');
+        }
+
+        // Input focus glow sync for icons
+        document.querySelectorAll('.input-wrapper input').forEach(inp => {
+            inp.addEventListener('focus', () => {
+                const icon = inp.closest('.input-wrapper').querySelector('.input-icon');
+                if (icon) icon.style.color = '#4dabf7';
+            });
+            inp.addEventListener('blur', () => {
+                const icon = inp.closest('.input-wrapper').querySelector('.input-icon');
+                if (icon) icon.style.color = 'rgba(255,255,255,0.5)';
+            });
+        });
+    </script>
+</body>
+</html>

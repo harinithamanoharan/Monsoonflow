@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MonsoonFlow Coordinator - Smart Rain Management</title>
+    <meta name="description" content="AI-powered daily schedule manager for the Indian monsoon. Smart rescheduling and rain-aware task suggestions.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <canvas id="rainCanvas"></canvas>
+    <div class="glass-overlay"></div>
+
+    <div class="app-container">
+        <!-- Alert Banner -->
+        <div id="alertBanner" class="alert-banner hidden">
+            <div class="alert-content">
+                <i data-lucide="cloud-rain"></i>
+                <span>Heavy rain expected in 2 hours. AI is optimizing your schedule...</span>
+            </div>
+        </div>
+
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-container">
+                    <div class="logo-circle">
+                        <i data-lucide="droplets" class="logo-icon"></i>
+                    </div>
+                </div>
+                <div class="brand-text">
+                    <h1>MONSOON<span>FLOW</span></h1>
+                    <p>Coordinator Intelligence</p>
+                </div>
+            </div>
+            <div class="header-info">
+                <div class="date-widget">
+                    <span id="currentDate">April 3, 2026</span>
+                    <span id="currentTime">18:57</span>
+                </div>
+                <div class="weather-controls">
+                    <button id="toggleWeather" class="toggle-btn normal" title="Toggle Rainy Mode">
+                        <i data-lucide="sun" id="weatherIcon"></i>
+                        <span id="weatherLabel">Normal Day</span>
+                    </button>
+                    
+                    <div class="user-profile-dropdown">
+                        <button id="userMenuBtn" class="user-btn">
+                            <div class="user-avatar" id="userInitial">H</div>
+                            <i data-lucide="chevron-down" class="menu-chevron"></i>
+                        </button>
+                        <div class="dropdown-content hidden" id="userDropdown">
+                            <div class="dropdown-header">
+                                <strong id="userName">User</strong>
+                                <span id="userEmail">hari@example.com</span>
+                            </div>
+                            <hr>
+                            <button class="dropdown-item" id="openProfile">
+                                <i data-lucide="user"></i> Profile
+                            </button>
+                            <button class="dropdown-item" id="openSettings">
+                                <i data-lucide="settings"></i> Settings
+                            </button>
+                            <button class="dropdown-item" id="logoutBtn">
+                                <i data-lucide="log-out"></i> Log Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Schedule Columns -->
+            <section class="schedule-section">
+                <div class="section-header">
+                    <h2>Daily Schedule</h2>
+                    <div class="view-toggle">
+                        <button class="active">Today</button>
+                        <button>Tomorrow</button>
+                    </div>
+                </div>
+                
+                <div class="columns-container">
+                    <div class="schedule-column" id="morningColumn">
+                        <div class="column-header">
+                            <h3><i data-lucide="sunrise"></i> Morning <span class="task-count" id="morningCount">0</span></h3>
+                            <button class="quick-add-btn" data-slot="morning" title="Add Morning Task">
+                                <i data-lucide="plus-circle"></i>
+                            </button>
+                        </div>
+                        <div class="task-list" id="morningTasks"></div>
+                    </div>
+                    <div class="schedule-column" id="afternoonColumn">
+                        <div class="column-header">
+                            <h3><i data-lucide="sun"></i> Afternoon <span class="task-count" id="afternoonCount">0</span></h3>
+                            <button class="quick-add-btn" data-slot="afternoon" title="Add Afternoon Task">
+                                <i data-lucide="plus-circle"></i>
+                            </button>
+                        </div>
+                        <div class="task-list" id="afternoonTasks"></div>
+                    </div>
+                    <div class="schedule-column" id="eveningColumn">
+                        <div class="column-header">
+                            <h3><i data-lucide="moon"></i> Evening <span class="task-count" id="eveningCount">0</span></h3>
+                            <button class="quick-add-btn" data-slot="evening" title="Add Evening Task">
+                                <i data-lucide="plus-circle"></i>
+                            </button>
+                        </div>
+                        <div class="task-list" id="eveningTasks"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Sidebar -->
+            <aside class="ai-sidebar">
+                <div class="ai-card weather-forecast">
+                    <div class="ai-header">
+                        <div class="ai-badge secondary">Forecast</div>
+                        <h3>3-Day Outlook</h3>
+                    </div>
+                    <div class="forecast-container" id="forecastList">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <a href="intelligence.html" style="text-decoration: none; color: inherit; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div class="ai-card schedule-agent" style="cursor: pointer;">
+                        <div class="ai-header">
+                            <div class="ai-badge">AI Agent</div>
+                            <h3>Schedule Intelligence</h3>
+                        </div>
+                        <div class="ai-explanation" id="aiExplanation">
+                            <p class="placeholder-text">Everything looks good! No weather disruptions detected in the forecast.</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="intelligence.html" style="text-decoration: none; color: inherit; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div class="ai-card suggestions-panel" style="cursor: pointer;">
+                        <div class="ai-header">
+                            <div class="ai-badge alt">Suggestions</div>
+                            <h3>Smart Actions</h3>
+                        </div>
+                        <ul class="suggestions-list" id="suggestionsList">
+                            <li class="suggestion-placeholder">Suggestions will appear based on weather patterns.</li>
+                        </ul>
+                    </div>
+                </a>
+
+                <a href="productivity.html" style="text-decoration: none; color: inherit; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div class="ai-card productivity-analytics" style="cursor: pointer;">
+                        <div class="ai-header">
+                            <div class="ai-badge alt">Analytics</div>
+                            <h3>Productivity Score</h3>
+                        </div>
+                        <div class="analytics-content">
+                            <div class="score-display">
+                                <span id="completionRate">0%</span>
+                                <small>Tasks Completed</small>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="history.html" style="text-decoration: none; color: inherit; display: block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <div class="ai-card historical-insights" style="cursor: pointer;">
+                        <div class="ai-header">
+                            <div class="ai-badge secondary">Database</div>
+                            <h3>Historical Context</h3>
+                        </div>
+                        <div class="insights-scroll" id="historicalNotes">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                </a>
+            </aside>
+        </main>
+
+        <!-- Insights Footer -->
+        <footer class="app-footer">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Time Saved</span>
+                    <span class="stat-value" id="timeSaved">0 mins</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tasks Rescheduled</span>
+                    <span class="stat-value" id="tasksAdjusted">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Reliability Score</span>
+                    <span class="stat-value">98%</span>
+                </div>
+            </div>
+            <div class="footer-actions" style="display: flex; gap: 10px;">
+                <a href="data-center.html" class="add-task-btn" id="seedDataBtn" style="background:#6741d9; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="database"></i> Data Center
+                </a>
+                <button class="add-task-btn" id="addTaskBtn">
+                    <i data-lucide="plus"></i> New Task
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- AI Chat Panel -->
+    <div class="ai-chat-panel">
+        <div class="chat-header">
+            <h3><i data-lucide="sparkles"></i> Coordinator Chat</h3>
+            <button id="toggleChat" class="icon-btn"><i data-lucide="chevron-down"></i></button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-msg">
+                Hello! I'm your MonsoonFlow Coordinator. How can I manage your schedule today?
+            </div>
+        </div>
+        <form id="chatForm" class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Ask the agent to modify tasks..." required>
+            <button type="submit" class="icon-btn send-btn"><i data-lucide="send"></i></button>
+        </form>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal hidden">
+        <div class="modal-content glass">
+            <h2>User Settings</h2>
+            <form id="settingsForm">
+                <div class="form-group">
+                    <label>Monsoon Sensitivity</label>
+                    <p class="form-help">Adjust how strict the AI agent should be during rain.</p>
+                    <select id="sensitivitySetting">
+                        <option value="low">Low - Only reschedule heavy rain</option>
+                        <option value="medium">Medium - Balanced rescheduling</option>
+                        <option value="high">High - Strict indoor-only during any rain</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="closeSettings" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="taskModal" class="modal hidden">
+        <div class="modal-content glass">
+            <h2>Add New Task</h2>
+            <form id="taskForm">
+                <div class="form-group">
+                    <label>Task Title</label>
+                    <input type="text" id="taskTitle" required placeholder="e.g., Grocery Shopping">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Location Type</label>
+                        <select id="taskLocation">
+                            <option value="outdoor">Outdoor</option>
+                            <option value="indoor">Indoor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority & Category</label>
+                        <div class="form-row">
+                            <select id="taskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                            <select id="taskCategory">
+                                <option value="Work">Work</option>
+                                <option value="Personal">Personal</option>
+                                <option value="Health">Health</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Time</label>
+                    <select id="taskTime">
+                        <option value="morning">Morning (8 AM - 12 PM)</option>
+                        <option value="afternoon">Afternoon (12 PM - 4 PM)</option>
+                        <option value="evening">Evening (4 PM - 8 PM)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Internal Note</label>
+                    <textarea id="taskNote" placeholder="Notes for AI Schedule Agent..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="closeModal" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- No longer needed -->
+    <script src="agent.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

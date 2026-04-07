@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile — MonsoonFlow Coordinator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .profile-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .profile-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .edit-toggle-btn {
+            position: absolute;
+            top: 2rem;
+            right: 2.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .edit-toggle-btn:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #4dabf7, #6741d9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 10px 40px rgba(77, 171, 247, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+        }
+
+        .editing .photo-overlay { opacity: 1; }
+
+        .profile-title h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .profile-title .profession-label {
+            color: var(--primary);
+            font-weight: 600;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .bio-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-top: 0.5rem;
+        }
+
+        .bio-section h4 { font-size: 0.75rem; text-transform: uppercase; opacity: 0.5; letter-spacing: 1px; margin-bottom: 8px; }
+        .bio-text { line-height: 1.6; opacity: 0.8; font-size: 1rem; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 1.2rem;
+            border-radius: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .editing .info-item { border-color: rgba(77, 171, 247, 0.3); }
+
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.5;
+            margin-bottom: 8px;
+            display: block;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value { font-size: 1.1rem; font-weight: 600; color: #fff; display: block; }
+
+        /* Input Styles */
+        .profile-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .profile-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            line-height: 1.6;
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .save-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .primary-btn {
+            background: linear-gradient(135deg, #4dabf7, #6741d9);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(77, 171, 247, 0.3);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid var(--glass-border);
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="rainCanvas" style="position: fixed; inset: 0; z-index: -2;"></canvas>
+
+    <div class="profile-container">
+        <div class="profile-card" id="profileCard">
+            <button class="edit-toggle-btn" id="editBtn">
+                <i data-lucide="edit-3"></i> Edit Profile
+            </button>
+
+            <!-- View Mode -->
+            <div id="viewMode">
+                <div class="profile-header">
+                    <div class="profile-avatar-large" id="profileInitial">H</div>
+                    <div class="profile-title">
+                        <h1 id="profileNameDisplay">Harinitha MG</h1>
+                        <p class="profession-label" id="profileProfession">Student</p>
+                    </div>
+                </div>
+
+                <div class="bio-section">
+                    <h4>About Me</h4>
+                    <p class="bio-text" id="profileBio">Passionate about using AI for social good and optimizing schedules during the monsoon season.</p>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Full Name</span>
+                        <span class="info-value" id="infoName">Harinitha MG</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email Address</span>
+                        <span class="info-value" id="infoEmail">harinithamg03@gmail.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Location</span>
+                        <span class="info-value" id="infoLocation">Tamil Nadu, India</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">College / Organization</span>
+                        <span class="info-value" id="infoCollege">Engineering College</span>
+                    </div>
+                </div>
+
+                <div class="profile-actions" style="margin-top: 2rem;">
+                    <a href="index.html" class="back-btn" style="text-decoration: none;">
+                        <i data-lucide="arrow-left"></i> Dashboard
+                    </a>
+                    <a href="#" class="logout-secondary" style="color: #ff6b6b; font-weight: 600; text-decoration: none;" id="logoutLink">Sign Out</a>
+                </div>
+            </div>
+
+            <!-- Edit Mode -->
+            <div id="editMode" class="hidden">
+                <div class="profile-header">
+                    <div class="profile-avatar-large">
+                        <span id="editInitial">H</span>
+                        <div class="photo-overlay"><i data-lucide="camera" style="width: 30px; height: 30px;"></i></div>
+                    </div>
+                    <div class="profile-title" style="flex-grow: 1;">
+                        <input type="text" id="editName" class="profile-input" style="font-size: 1.5rem; margin-bottom: 8px;" placeholder="Full Name">
+                        <input type="text" id="editProfession" class="profile-input" placeholder="Profession or College">
+                    </div>
+                </div>
+
+                <div class="bio-section editing">
+                    <h4>Your Bio</h4>
+                    <textarea id="editBio" class="profile-textarea" placeholder="Tell us more about yourself..."></textarea>
+                </div>
+
+                <div class="info-grid editing">
+                    <div class="info-item">
+                        <span class="info-label">Location</span>
+                        <input type="text" id="editLocation" class="profile-input">
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">College / Organization</span>
+                        <input type="text" id="editCollege" class="profile-input">
+                    </div>
+                </div>
+
+                <div class="save-actions">
+                    <button class="secondary-btn" id="cancelBtn">Cancel</button>
+                    <button class="primary-btn" id="saveBtn">Save Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Data Management
+        const viewElements = {
+            name: document.getElementById('profileNameDisplay'),
+            infoName: document.getElementById('infoName'),
+            email: document.getElementById('infoEmail'),
+            location: document.getElementById('infoLocation'),
+            college: document.getElementById('infoCollege'),
+            profession: document.getElementById('profileProfession'),
+            bio: document.getElementById('profileBio')
+        };
+
+        const editInputs = {
+            name: document.getElementById('editName'),
+            location: document.getElementById('editLocation'),
+            college: document.getElementById('editCollege'),
+            profession: document.getElementById('editProfession'),
+            bio: document.getElementById('editBio')
+        };
+
+        function loadUserData() {
+            const userData = JSON.parse(localStorage.getItem('monsoonflow_user'));
+            if (!userData || !userData.loggedIn) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Fallback for missing fields (old accounts)
+            const pData = {
+                name: userData.name || 'User',
+                email: userData.email || 'email@example.com',
+                location: userData.location || 'Tamil Nadu, India',
+                college: userData.college || 'Engineering College',
+                profession: userData.profession || 'Student',
+                bio: userData.bio || 'Passionate about using AI for social good and optimizing schedules during the monsoon season.'
+            };
+
+            // View Mode
+            viewElements.name.textContent = pData.name;
+            viewElements.infoName.textContent = pData.name;
+            viewElements.email.textContent = pData.email;
+            viewElements.location.textContent = pData.location;
+            viewElements.college.textContent = pData.college;
+            viewElements.profession.textContent = pData.profession;
+            viewElements.bio.textContent = pData.bio;
+            
+            document.getElementById('profileInitial').textContent = pData.name.charAt(0);
+            document.getElementById('editInitial').textContent = pData.name.charAt(0);
+
+            // Edit Mode
+            editInputs.name.value = pData.name;
+            editInputs.location.value = pData.location;
+            editInputs.college.value = pData.college;
+            editInputs.profession.value = pData.profession;
+            editInputs.bio.value = pData.bio;
+        }
+
+        // Mode Toggles
+        const viewMode = document.getElementById('viewMode');
+        const editMode = document.getElementById('editMode');
+        const editBtn = document.getElementById('editBtn');
+
+        editBtn.addEventListener('click', () => {
+            viewMode.classList.add('hidden');
+            editMode.classList.remove('hidden');
+            editBtn.classList.add('hidden');
+            document.getElementById('profileCard').classList.add('editing');
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            viewMode.classList.remove('hidden');
+            editMode.classList.add('hidden');
+            editBtn.classList.remove('hidden');
+            document.getElementById('profileCard').classList.remove('editing');
+        });
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            const userData = JSON.parse(localStorage.getItem('monsoonflow_user'));
+            
+            userData.name = editInputs.name.value;
+            userData.location = editInputs.location.value;
+            userData.college = editInputs.college.value;
+            userData.profession = editInputs.profession.value;
+            userData.bio = editInputs.bio.value;
+
+            localStorage.setItem('monsoonflow_user', JSON.stringify(userData));
+            loadUserData();
+
+            viewMode.classList.remove('hidden');
+            editMode.classList.add('hidden');
+            editBtn.classList.remove('hidden');
+            document.getElementById('profileCard').classList.remove('editing');
+        });
+
+        document.getElementById('logoutLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('monsoonflow_user');
+            window.location.href = 'login.html';
+        });
+
+        loadUserData();
+
+        // Rain Background Logic
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        const rainDrops = [];
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        class Drop {
+            constructor() { this.init(); }
+            init() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * -h;
+                this.l = Math.random() * 20 + 10;
+                this.v = Math.random() * 5 + 5;
+                this.a = Math.random() * 0.1 + 0.1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(174, 194, 224, ${this.a})`;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.l);
+                ctx.stroke();
+            }
+            update() {
+                this.y += this.v;
+                if (this.y > h) this.init();
+            }
+        }
+        for (let i = 0; i < 80; i++) rainDrops.push(new Drop());
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+            rainDrops.forEach(d => { d.update(); d.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Analytics — MonsoonFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .chart-title p {
+            font-size: 0.85rem;
+            opacity: 0.5;
+        }
+
+        /* Mock Weekly Chart */
+        .bar-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 200px;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            gap: 15px;
+        }
+
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar {
+            width: 100%;
+            background: linear-gradient(to top, rgba(77, 171, 247, 0.2), rgba(77, 171, 247, 0.8));
+            border-radius: 8px 8px 4px 4px;
+            transition: height 1s ease-out;
+            position: relative;
+        }
+
+        .bar:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px rgba(77, 171, 247, 0.4);
+        }
+
+        .bar-label {
+            font-size: 0.75rem;
+            opacity: 0.5;
+            text-transform: uppercase;
+        }
+
+        /* Stats Cards */
+        .stat-mini-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .stat-mini-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-mini-card h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+
+        .stat-mini-card .val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--primary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .back-nav {
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="rainCanvas" style="position: fixed; inset: 0; z-index: -2;"></canvas>
+    <div class="app-container">
+        <header class="back-nav">
+            <a href="index.html" class="back-btn" style="width: fit-content; text-decoration: none;">
+                <i data-lucide="arrow-left"></i> Back to Dashboard
+            </a>
+        </header>
+
+        <div class="profile-title" style="margin-bottom: 2rem;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem;">Productivity Insights</h1>
+            <p style="color: var(--primary); opacity: 0.8; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Performance Analytics & Trends</p>
+        </div>
+
+        <div class="analytics-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <h2>Weekly Completion</h2>
+                        <p>Tasks completed per day vs weather intensity</p>
+                    </div>
+                </div>
+                <div class="bar-chart" id="weeklyChart">
+                    <div class="bar-group"><div class="bar" style="height: 0%" data-h="65"></div><span class="bar-label">Mon</span></div>
+                    <div class="bar-group"><div class="bar" style="height: 0%" data-h="40"></div><span class="bar-label">Tue</span></div>
+                    <div class="bar-group"><div class="bar" style="height: 0%" data-h="85"></div><span class="bar-label">Wed</span></div>
+                    <div class="bar-group"><div class="bar" style="height: 0%" data-h="55"></div><span class="bar-label">Thu</span></div>
+                    <div class="bar-group"><div class="bar" style="height: 0%" data-h="90"></div><span class="bar-label">Fri</span></div>
+                    <div class="bar-group"><div class="bar" style="height: 0%" data-h="30"></div><span class="bar-label">Sat</span></div>
+                    <div class="bar-group"><div class="bar" style="height: 0%" data-h="20"></div><span class="bar-label">Sun</span></div>
+                </div>
+            </div>
+
+            <div class="stat-mini-grid">
+                <div class="stat-mini-card">
+                    <h4>Total Time Saved</h4>
+                    <span class="val">14.2 hrs</span>
+                    <p style="font-size: 0.75rem; opacity: 0.4;">This month through AI rescheduling</p>
+                </div>
+                <div class="stat-mini-card">
+                    <h4>Peak Efficiency</h4>
+                    <span class="val" style="color: #61e19d;">92%</span>
+                    <p style="font-size: 0.75rem; opacity: 0.4;">During clear-weather windows</p>
+                </div>
+                <div class="stat-mini-card">
+                    <h4>Efficiency Drop</h4>
+                    <span class="val" style="color: #ff6b6b;">-12%</span>
+                    <p style="font-size: 0.75rem; opacity: 0.4;">During heavy monsoon alerts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        
+        // Auth Guard
+        const userData = JSON.parse(localStorage.getItem('monsoonflow_user'));
+        if (!userData || !userData.loggedIn) window.location.href = 'login.html';
+
+        // Animate Bars
+        setTimeout(() => {
+            document.querySelectorAll('.bar').forEach(bar => {
+                bar.style.height = bar.getAttribute('data-h') + '%';
+            });
+        }, 300);
+
+        // Standard Rain Background
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        const rainDrops = [];
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Drop {
+            constructor() { this.init(); }
+            init() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * -h;
+                this.l = Math.random() * 20 + 10;
+                this.v = Math.random() * 5 + 5;
+                this.a = Math.random() * 0.1 + 0.1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(174, 194, 224, ${this.a})`;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.l);
+                ctx.stroke();
+            }
+            update() {
+                this.y += this.v;
+                if (this.y > h) this.init();
+            }
+        }
+        for (let i = 0; i < 100; i++) rainDrops.push(new Drop());
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+            rainDrops.forEach(d => { d.update(); d.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

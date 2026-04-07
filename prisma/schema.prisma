@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Task {
+  id        String   @id @default(uuid())
+  title     String
+  status    String   @default("pending")
+  result    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WorkflowState {
+  id        String   @id @default(uuid())
+  status    String   @default("active")
+  stateData String   // JSON string of current state
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AgentLog {
+  id        String   @id @default(uuid())
+  agentName String
+  action    String
+  details   String?  // JSON string
+  createdAt DateTime @default(now())
+}

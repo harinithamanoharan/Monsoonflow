@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Intelligence - MonsoonFlow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Auth Guard
+        const userData = JSON.parse(localStorage.getItem('monsoonflow_user'));
+        if (!userData || !userData.loggedIn) {
+            window.location.href = 'login.html';
+        }
+    </script>
+    <style>
+        .intel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            opacity: 0.8;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            transition: 0.2s;
+        }
+        .btn-back:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .intel-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .log-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .log-item {
+            background: rgba(0,0,0,0.2);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #4dabf7;
+        }
+        .log-item.warning { border-left-color: #ffaa00; }
+        .log-item.success { border-left-color: #00ff88; }
+        
+        .log-time {
+            font-size: 0.75rem;
+            opacity: 0.5;
+            margin-bottom: 4px;
+        }
+        .log-content {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .map-mockup {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, rgba(77, 171, 247, 0.1), rgba(10, 17, 40, 0.5));
+            border-radius: 12px;
+            border: 1px dashed rgba(77, 171, 247, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            color: #4dabf7;
+            margin-top: 1rem;
+        }
+        .weather-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .w-stat {
+            background: rgba(255,255,255,0.03);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .w-stat .val { font-size: 1.5rem; font-weight: 700; color: white; display: block; }
+        .w-stat .lbl { font-size: 0.7rem; text-transform: uppercase; opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <canvas id="rainCanvas"></canvas>
+    <div class="glass-overlay"></div>
+
+    <div class="app-container">
+        <div class="intel-header">
+            <div class="brand">
+                <div class="logo-circle" style="background: linear-gradient(135deg, #8e44ad, #9b59b6); box-shadow: 0 0 15px rgba(142, 68, 173, 0.5);">
+                    <i data-lucide="brain" class="logo-icon" style="color: white; filter: none;"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>Schedule <span>Intelligence</span></h1>
+                    <p>Deep Agent Analysis</p>
+                </div>
+            </div>
+            <a href="index.html" class="btn-back">
+                <i data-lucide="arrow-left" size="18"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="intel-grid">
+            <div class="ai-card">
+                <div class="ai-header">
+                    <div class="ai-badge alt">Live Processing</div>
+                    <h3>Agent Decision Logs</h3>
+                </div>
+                <p style="opacity: 0.7; font-size: 0.9rem;">Chronological breakdown of recent Gemini AI routing decisions.</p>
+                <div class="log-list">
+                    <div class="log-item success">
+                        <div class="log-time">10:42 AM - API Execution</div>
+                        <div class="log-content">Connected to <strong>gemini-2.5-flash</strong>. Parsing natural language request to retrieve schedule and calendar overlay.</div>
+                    </div>
+                    <div class="log-item warning">
+                        <div class="log-time">10:42 AM - MCP Tool Invocation</div>
+                        <div class="log-content">Called `get_live_weather(city: "Bangalore")`. Received 65% precipitation probability for the evening window.</div>
+                    </div>
+                    <div class="log-item success">
+                        <div class="log-time">10:43 AM - Schedule Modification</div>
+                        <div class="log-content">Automatically shifted "Evening Gym Session" and "Hardware Store Visit" to indoor prioritization based on weather threat level. Context preserved in database.</div>
+                    </div>
+                    <div class="log-item">
+                        <div class="log-time">10:43 AM - Response</div>
+                        <div class="log-content">Final payload successfully delivered to Frontend Chat Interface.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ai-card">
+                <div class="ai-header">
+                    <div class="ai-badge">Environment Data</div>
+                    <h3>Meteorological Context</h3>
+                </div>
+                <p style="opacity: 0.7; font-size: 0.9rem;">Real-time API radar feeding the decision engine.</p>
+                
+                <div class="weather-stats">
+                    <div class="w-stat">
+                        <span class="val">65%</span>
+                        <span class="lbl">Precipitation Prob.</span>
+                    </div>
+                    <div class="w-stat">
+                        <span class="val">18 km/h</span>
+                        <span class="lbl">Wind Gusts</span>
+                    </div>
+                    <div class="w-stat">
+                        <span class="val">26°C</span>
+                        <span class="lbl">Current Temp</span>
+                    </div>
+                    <div class="w-stat">
+                        <span class="val">High</span>
+                        <span class="lbl">Cloud Cover</span>
+                    </div>
+                </div>
+
+                <div class="map-mockup">
+                    <i data-lucide="satellite" size="48" style="opacity: 0.5;"></i>
+                    <span>Live Radar Sync Active</span>
+                    <span style="font-size: 0.7rem; opacity: 0.5;">Coordinates: 12.9716 N, 77.5946 E</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        // Standard Rain background
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        const drops = [];
+        window.addEventListener('resize', resize);
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        resize();
+        for(let i=0; i<60; i++) {
+            drops.push({
+                x: Math.random() * w, y: Math.random() * -h,
+                l: Math.random() * 20 + 10, v: Math.random() * 4 + 4, a: Math.random() * 0.1 + 0.05
+            });
+        }
+        function animate() {
+            ctx.clearRect(0,0,w,h);
+            drops.forEach(d => {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(174, 194, 224, ${d.a})`;
+                ctx.moveTo(d.x, d.y);
+                ctx.lineTo(d.x, d.y + d.l);
+                ctx.stroke();
+                d.y += d.v;
+                if(d.y > h) { d.y = Math.random() * -h; d.x = Math.random() * w; }
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

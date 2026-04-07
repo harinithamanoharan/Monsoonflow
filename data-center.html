@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Center — MonsoonFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .data-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 0.6s backwards;
+        }
+
+        .data-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .data-card i {
+            width: 40px;
+            height: 40px;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .data-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .data-card p {
+            font-size: 0.95rem;
+            opacity: 0.6;
+            line-height: 1.5;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-seed { background: linear-gradient(135deg, #4dabf7, #6741d9); color: white; }
+        .btn-clear { background: rgba(255, 107, 107, 0.1); color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.2); }
+        .btn-export { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--glass-border); }
+
+        .action-btn:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+        .status-msg {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .status-msg.show { opacity: 1; }
+        .status-success { color: #61e19d; }
+        .status-error { color: #ff6b6b; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="rainCanvas" style="position: fixed; inset: 0; z-index: -2;"></canvas>
+
+    <div class="app-container">
+        <header class="back-nav" style="margin-bottom: 2rem;">
+            <a href="index.html" class="back-btn" style="width: fit-content; text-decoration: none;">
+                <i data-lucide="arrow-left"></i> Back to Dashboard
+            </a>
+        </header>
+
+        <div class="profile-title" style="margin-bottom: 3rem;">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem;">Data Management Center</h1>
+            <p style="color: var(--primary); opacity: 0.8; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Control Your MonsoonFlow Information</p>
+        </div>
+
+        <div class="data-grid">
+            <!-- Seed Card -->
+            <div class="data-card" style="animation-delay: 0.1s;">
+                <i data-lucide="database"></i>
+                <h3>Populate Demo Data</h3>
+                <p>Perfect for exploring how the AI agent manages a busy rainy-day schedule. This adds a set of sample tasks instantly.</p>
+                <button class="action-btn btn-seed" id="seedBtn">
+                    <i data-lucide="sparkles"></i> Load Sample Data
+                </button>
+                <div id="seedStatus" class="status-msg status-success">Demo data loaded successfully!</div>
+            </div>
+
+            <!-- Clear Card -->
+            <div class="data-card" style="animation-delay: 0.2s;">
+                <i data-lucide="trash-2"></i>
+                <h3>Reset Schedule</h3>
+                <p>Wipe your current schedule clean for a fresh start. This action is irreversible—all pending and completed tasks will be removed.</p>
+                <button class="action-btn btn-clear" id="clearBtn">
+                    <i data-lucide="alert-triangle"></i> Clear My Data
+                </button>
+                <div id="clearStatus" class="status-msg status-success">Schedule wiped successfully.</div>
+            </div>
+
+            <!-- Export Card -->
+            <div class="data-card" style="animation-delay: 0.3s;">
+                <i data-lucide="download"></i>
+                <h3>Export Schedule</h3>
+                <p>Download a backup of your daily task logs and historical database observations in JSON format for safe-keeping.</p>
+                <button class="action-btn btn-export" id="exportBtn">
+                    <i data-lucide="file-json text-primary"></i> Download Backup
+                </button>
+                <div id="exportStatus" class="status-msg status-success">Export generated!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        const userData = JSON.parse(localStorage.getItem('monsoonflow_user'));
+        if (!userData || !userData.loggedIn) window.location.href = 'login.html';
+
+        // Seed Data
+        document.getElementById('seedBtn').addEventListener('click', async () => {
+            const status = document.getElementById('seedStatus');
+            try {
+                const response = await fetch('/api/tasks/seed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userData.id })
+                });
+                if (response.ok) {
+                    status.classList.add('show');
+                    setTimeout(() => status.classList.remove('show'), 3000);
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        // Clear Data
+        document.getElementById('clearBtn').addEventListener('click', async () => {
+            if (!confirm("Are you sure you want to delete ALL tasks? This cannot be undone.")) return;
+            const status = document.getElementById('clearStatus');
+            try {
+                const response = await fetch(`/api/tasks/clear/${userData.id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    status.classList.add('show');
+                    setTimeout(() => status.classList.remove('show'), 3000);
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        // Export Data
+        document.getElementById('exportBtn').addEventListener('click', async () => {
+            const status = document.getElementById('exportStatus');
+            try {
+                const response = await fetch(`/api/tasks/${userData.id}`);
+                const data = await response.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `monsoonflow_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                status.classList.add('show');
+                setTimeout(() => status.classList.remove('show'), 3000);
+            } catch (err) { console.error(err); }
+        });
+
+        // Background Rain
+        const canvas = document.getElementById('rainCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        const rainDrops = [];
+        window.addEventListener('resize', () => {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        });
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+        class Drop {
+            constructor() { this.init(); }
+            init() {
+                this.x = Math.random() * w;
+                this.y = Math.random() * -h;
+                this.l = Math.random() * 20 + 10;
+                this.v = Math.random() * 5 + 5;
+                this.a = Math.random() * 0.1 + 0.1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(174, 194, 224, ${this.a})`;
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.l);
+                ctx.stroke();
+            }
+            update() {
+                this.y += this.v;
+                if (this.y > h) this.init();
+            }
+        }
+        for (let i = 0; i < 100; i++) rainDrops.push(new Drop());
+        function animate() {
+            ctx.clearRect(0, 0, w, h);
+            rainDrops.forEach(d => { d.update(); d.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

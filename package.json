@@ -1,0 +1,30 @@
+{
+  "name": "monsoonflow-coordinator",
+  "version": "1.0.0",
+  "description": "Smart daily schedule manager for Indian monsoons - Vanilla JS Edition",
+  "type": "module",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "monsoon",
+    "ai",
+    "scheduler",
+    "vanilla-js"
+  ],
+  "author": "Antigravity",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@prisma/client": "^7.6.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.0",
+    "express": "^5.2.1",
+    "fs-extra": "^11.3.4",
+    "nodemon": "^3.1.14",
+    "prisma": "^7.6.0"
+  }
+}
